@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import java.util.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.ui.tooling.preview.Preview
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -162,4 +163,12 @@ fun validateFields(nombre: String, apellidos: String, email: String, password: S
             Utils.isValidEmail(email) &&
             password.isNotBlank() &&
             fechaNacimiento != null
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CrearCuentaScreenPreview() {
+    CrearCuentaScreen(
+        onNavigateBack = {}
+    )
 }

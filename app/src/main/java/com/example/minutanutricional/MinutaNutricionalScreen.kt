@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -100,3 +101,20 @@ fun generarMinutaMensual(): List<RecetaDiaria> {
 }
 
 fun String.capitalize() = this.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+
+@Preview(showBackground = true)
+@Composable
+fun MinutaNutricionalScreenPreview() {
+    MinutaNutricionalScreen()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RecetaItemPreview() {
+    val recetaEjemplo = RecetaDiaria(
+        fecha = java.time.LocalDate.now(),
+        nombre = "Receta del día: Pollo al horno con verduras y arroz integral",
+        descripcion = "Disfruta de esta deliciosa receta saludable."
+    )
+    RecetaItem(receta = recetaEjemplo)
+}
