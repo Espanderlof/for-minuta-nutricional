@@ -16,21 +16,65 @@ import java.util.*
 data class RecetaDiaria(
     val fecha: LocalDate,
     val nombre: String,
-    val descripcion: String
+    val descripcion: String,
+    val recomendacionNutricional: String
+)
+
+val recetasSemana = listOf(
+    RecetaDiaria(
+        LocalDate.now(),
+        "Pollo al horno con verduras y arroz integral",
+        "Disfruta de esta deliciosa receta saludable.",
+        "Alto en proteínas y fibra. Proporciona energía de liberación lenta."
+    ),
+    RecetaDiaria(
+        LocalDate.now().plusDays(1),
+        "Salmón a la plancha con ensalada mixta",
+        "Una comida ligera y nutritiva.",
+        "Rico en ácidos grasos omega-3. Ayuda a la salud cardiovascular."
+    ),
+    RecetaDiaria(
+        LocalDate.now().plusDays(2),
+        "Pasta integral con salsa de tomate y albahaca",
+        "Un plato vegetariano lleno de sabor.",
+        "Buena fuente de carbohidratos complejos y licopeno."
+    ),
+    RecetaDiaria(
+        LocalDate.now().plusDays(3),
+        "Lentejas con verduras y arroz",
+        "Una combinación perfecta de proteínas vegetales.",
+        "Alto contenido en hierro y fibra. Excelente para la digestión."
+    ),
+    RecetaDiaria(
+        LocalDate.now().plusDays(4),
+        "Tortilla de espinacas y champiñones",
+        "Una opción saludable y sabrosa.",
+        "Rica en folatos y vitamina D. Beneficioso para el sistema inmunológico."
+    ),
+    RecetaDiaria(
+        LocalDate.now().plusDays(5),
+        "Ensalada César con pollo a la parrilla",
+        "Una ensalada clásica con un toque proteico.",
+        "Baja en calorías y alta en proteínas. Ideal para control de peso."
+    ),
+    RecetaDiaria(
+        LocalDate.now().plusDays(6),
+        "Pescado al vapor con brócoli y quinoa",
+        "Un plato equilibrado y nutritivo.",
+        "Excelente fuente de proteínas magras y antioxidantes."
+    )
 )
 
 @Composable
 fun MinutaNutricionalScreen() {
-    val recetas = remember { generarMinutaMensual() }
-
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
-            "Minuta Nutricional Mensual",
+            "Minuta Nutricional Semanal",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(16.dp)
         )
         LazyColumn {
-            items(recetas) { receta ->
+            items(recetasSemana) { receta ->
                 RecetaItem(receta)
             }
         }
@@ -58,46 +102,14 @@ fun RecetaItem(receta: RecetaDiaria) {
                 text = receta.descripcion,
                 style = MaterialTheme.typography.bodyMedium
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Recomendación nutricional: ${receta.recomendacionNutricional}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.secondary
+            )
         }
     }
-}
-
-fun generarMinutaMensual(): List<RecetaDiaria> {
-    val hoy = LocalDate.now()
-    val finPeriodo = hoy.plusDays(30) // 30 días a partir de hoy
-
-    val recetas = mutableListOf<RecetaDiaria>()
-    var fechaActual = hoy
-
-    val opcionesRecetas = listOf(
-        "Pollo al horno con verduras y arroz integral",
-        "Salmón a la plancha con ensalada mixta",
-        "Pasta integral con salsa de tomate y albahaca",
-        "Lentejas con verduras y arroz",
-        "Tortilla de espinacas y champiñones",
-        "Ensalada César con pollo a la parrilla",
-        "Paella de mariscos con arroz integral",
-        "Sopa de verduras con crutones integrales",
-        "Pavo asado con puré de papas",
-        "Hamburguesa de lentejas con ensalada",
-        "Pescado al vapor con brócoli y quinoa",
-        "Lasaña de vegetales",
-        "Curry de garbanzos con arroz basmati",
-        "Revuelto de tofu con champiñones",
-        "Estofado de ternera con verduras"
-    )
-
-    while (!fechaActual.isAfter(finPeriodo)) {
-        val recetaDelDia = opcionesRecetas.random()
-        recetas.add(RecetaDiaria(
-            fecha = fechaActual,
-            nombre = "Receta del día: $recetaDelDia",
-            descripcion = "Disfruta de esta deliciosa receta saludable."
-        ))
-        fechaActual = fechaActual.plusDays(1)
-    }
-
-    return recetas
 }
 
 fun String.capitalize() = this.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
@@ -111,10 +123,6 @@ fun MinutaNutricionalScreenPreview() {
 @Preview(showBackground = true)
 @Composable
 fun RecetaItemPreview() {
-    val recetaEjemplo = RecetaDiaria(
-        fecha = java.time.LocalDate.now(),
-        nombre = "Receta del día: Pollo al horno con verduras y arroz integral",
-        descripcion = "Disfruta de esta deliciosa receta saludable."
-    )
+    val recetaEjemplo = recetasSemana[0]
     RecetaItem(receta = recetaEjemplo)
 }

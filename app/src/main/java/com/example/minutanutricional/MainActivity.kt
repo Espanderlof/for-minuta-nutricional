@@ -11,6 +11,7 @@ import com.example.minutanutricional.ui.theme.MinutaNutricionalTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        CuentasManager.agregarCuentasDePrueba()
         setContent {
             MinutaNutricionalTheme {
                 val navController = rememberNavController()

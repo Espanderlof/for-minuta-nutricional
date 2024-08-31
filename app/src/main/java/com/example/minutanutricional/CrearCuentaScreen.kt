@@ -95,8 +95,14 @@ fun CrearCuentaScreen(onNavigateBack: () -> Unit) {
         Button(
             onClick = {
                 if (validateFields(nombre, apellidos, email, password, fechaNacimiento)) {
-                    alertMessage = "Su cuenta ha sido creada con éxito"
-                    showAlert = true
+                    val nuevaCuenta = Cuenta(nombre, apellidos, email, password, Date(fechaNacimiento!!))
+                    if (CuentasManager.agregarCuenta(nuevaCuenta)) {
+                        alertMessage = "Su cuenta ha sido creada con éxito"
+                        showAlert = true
+                    } else {
+                        alertMessage = "El correo electrónico ya está en uso"
+                        showAlert = true
+                    }
                 } else {
                     alertMessage = "Por favor, complete todos los campos correctamente"
                     showAlert = true

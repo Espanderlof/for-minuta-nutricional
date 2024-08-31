@@ -12,6 +12,9 @@ import androidx.compose.ui.unit.dp
 fun RecuperarContrasenaScreen(onNavigateBack: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
+    var dialogMessage by remember { mutableStateOf("") }
+    var isError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -26,17 +29,40 @@ fun RecuperarContrasenaScreen(onNavigateBack: () -> Unit) {
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                isError = false
+                errorMessage = ""
+            },
             label = { Text("Correo electrónico") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = isError
         )
+
+        if (isError) {
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = {
-                if (email.isNotBlank()) {
-                    showDialog = true
+                if (email.isBlank() || !Utils.isValidEmail(email)) {
+                    isError = true
+                    errorMessage = "Por favor, introduce un correo electrónico válido"
+                } else {
+                    if (CuentasManager.buscarCuentaPorCorreo(email) != null) {
+                        dialogMessage = "Se ha enviado un correo de restauración a tu cuenta de correo electrónico $email"
+                        showDialog = true
+                    } else {
+                        isError = true
+                        errorMessage = "No se encontró ninguna cuenta asociada a este correo electrónico"
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -55,7 +81,7 @@ fun RecuperarContrasenaScreen(onNavigateBack: () -> Unit) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = { Text("Correo enviado") },
-            text = { Text("Se ha enviado un correo de restauración a tu cuenta de correo electrónico $email") },
+            text = { Text(dialogMessage) },
             confirmButton = {
                 TextButton(onClick = {
                     showDialog = false

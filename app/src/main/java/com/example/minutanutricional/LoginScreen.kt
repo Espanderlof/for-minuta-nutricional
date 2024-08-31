@@ -17,7 +17,8 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var showError by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -28,12 +29,8 @@ fun LoginScreen(
     ) {
         OutlinedTextField(
             value = email,
-            onValueChange = {
-                email = it
-                showError = false
-            },
+            onValueChange = { email = it },
             label = { Text("Correo electrónico") },
-            isError = showError && !Utils.isValidEmail(email),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -41,13 +38,9 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = password,
-            onValueChange = {
-                password = it
-                showError = false
-            },
+            onValueChange = { password = it },
             label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
-            isError = showError && password.isBlank(),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -55,9 +48,22 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                showError = true
-                if (Utils.isValidEmail(email) && password.isNotBlank()) {
-                    onNavigateToMinutaNutricional()
+                when {
+                    email.isBlank() || password.isBlank() -> {
+                        errorMessage = "Por favor, completa todos los campos"
+                        showErrorDialog = true
+                    }
+                    !Utils.isValidEmail(email) -> {
+                        errorMessage = "Por favor, introduce un correo electrónico válido"
+                        showErrorDialog = true
+                    }
+                    CuentasManager.validarCredenciales(email, password) -> {
+                        onNavigateToMinutaNutricional()
+                    }
+                    else -> {
+                        errorMessage = "Correo electrónico o contraseña incorrectos"
+                        showErrorDialog = true
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -75,8 +81,20 @@ fun LoginScreen(
             Text("¿Has olvidado la contraseña?")
         }
     }
-}
 
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            title = { Text("Error") },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                TextButton(onClick = { showErrorDialog = false }) {
+                    Text("Aceptar")
+                }
+            }
+        )
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
