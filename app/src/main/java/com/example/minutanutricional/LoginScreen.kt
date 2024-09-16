@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 fun LoginScreen(
     onNavigateToRecuperarContrasena: () -> Unit,
     onNavigateToCrearCuenta: () -> Unit,
-    onNavigateToMinutaNutricional: () -> Unit
+    onNavigateToMinutaNutricional: (String) -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -58,7 +58,7 @@ fun LoginScreen(
                         showErrorDialog = true
                     }
                     CuentasManager.validarCredenciales(email, password) -> {
-                        onNavigateToMinutaNutricional()
+                        onNavigateToMinutaNutricional(email)
                     }
                     else -> {
                         errorMessage = "Correo electrónico o contraseña incorrectos"
