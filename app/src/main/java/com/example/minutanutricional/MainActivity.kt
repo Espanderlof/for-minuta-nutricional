@@ -14,14 +14,15 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.minutanutricional.ui.theme.MinutaNutricionalTheme
 import kotlinx.coroutines.launch
+import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
     private lateinit var userPreferences: UserPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
         userPreferences = UserPreferences(this)
-        CuentasManager.agregarCuentasDePrueba()
 
         setContent {
             MinutaNutricionalTheme {
@@ -31,7 +32,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// S7
 @Composable
 fun MinutaNutricionalApp(userPreferences: UserPreferences) {
     val navController = rememberNavController()

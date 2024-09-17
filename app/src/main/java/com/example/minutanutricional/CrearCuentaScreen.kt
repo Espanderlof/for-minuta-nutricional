@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.ui.tooling.preview.Preview
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,8 +26,10 @@ fun CrearCuentaScreen(onNavigateBack: () -> Unit) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showAlert by remember { mutableStateOf(false) }
     var alertMessage by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
     val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -94,23 +97,37 @@ fun CrearCuentaScreen(onNavigateBack: () -> Unit) {
 
         Button(
             onClick = {
-                if (validateFields(nombre, apellidos, email, password, fechaNacimiento)) {
-                    val nuevaCuenta = Cuenta(nombre, apellidos, email, password, Date(fechaNacimiento!!))
-                    if (CuentasManager.agregarCuenta(nuevaCuenta)) {
-                        alertMessage = "Su cuenta ha sido creada con éxito"
-                        showAlert = true
+                coroutineScope.launch {
+                    isLoading = true
+                    if (validateFields(nombre, apellidos, email, password, fechaNacimiento)) {
+                        val nuevaCuenta = Cuenta(nombre, apellidos, email, password, fechaNacimiento!!)
+                        try {
+                            if (CuentasManager.agregarCuenta(nuevaCuenta)) {
+                                alertMessage = "Su cuenta ha sido creada con éxito"
+                                showAlert = true
+                            } else {
+                                alertMessage = "El correo electrónico ya está en uso"
+                                showAlert = true
+                            }
+                        } catch (e: Exception) {
+                            alertMessage = "Error al crear la cuenta. Inténtalo de nuevo."
+                            showAlert = true
+                        }
                     } else {
-                        alertMessage = "El correo electrónico ya está en uso"
+                        alertMessage = "Por favor, complete todos los campos correctamente"
                         showAlert = true
                     }
-                } else {
-                    alertMessage = "Por favor, complete todos los campos correctamente"
-                    showAlert = true
+                    isLoading = false
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading
         ) {
-            Text("Crear cuenta")
+            if (isLoading) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
+            } else {
+                Text("Crear cuenta")
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))

@@ -1,46 +1,65 @@
 package com.example.minutanutricional
 
-import java.util.*
-import java.text.SimpleDateFormat
-import java.util.Locale
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 data class Cuenta(
-    val nombre: String,
-    val apellidos: String,
-    val correoElectronico: String,
-    val contrasena: String,
-    val fechaNacimiento: Date
+    val nombre: String = "",
+    val apellidos: String = "",
+    val correoElectronico: String = "",
+    val contrasena: String = "",
+    val fechaNacimiento: Long = 0
 )
 
 object CuentasManager {
-    private val cuentas = mutableListOf<Cuenta>()
+    private val database = FirebaseDatabase.getInstance()
+    private val cuentasRef = database.getReference("cuentas")
+    private val auth = FirebaseAuth.getInstance()
 
-    fun agregarCuenta(cuenta: Cuenta): Boolean {
-        if (buscarCuentaPorCorreo(cuenta.correoElectronico) != null) {
-            return false // El correo ya está en uso
+    suspend fun agregarCuenta(cuenta: Cuenta): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val result = auth.createUserWithEmailAndPassword(cuenta.correoElectronico, cuenta.contrasena).await()
+            val userId = result.user?.uid ?: return@withContext false
+            cuentasRef.child(userId).setValue(cuenta).await()
+            true
+        } catch (e: Exception) {
+            false
         }
-        cuentas.add(cuenta)
-        return true
     }
 
-    fun validarCredenciales(correoElectronico: String, contrasena: String): Boolean {
-        return cuentas.any { it.correoElectronico == correoElectronico && it.contrasena == contrasena }
+    suspend fun validarCredenciales(correoElectronico: String, contrasena: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            auth.signInWithEmailAndPassword(correoElectronico, contrasena).await()
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
-    fun buscarCuentaPorCorreo(correoElectronico: String): Cuenta? {
-        return cuentas.find { it.correoElectronico == correoElectronico }
+    suspend fun buscarCuentaPorCorreo(correoElectronico: String): Cuenta? = withContext(Dispatchers.IO) {
+        try {
+            val snapshot = cuentasRef.orderByChild("correoElectronico").equalTo(correoElectronico).get().await()
+            snapshot.children.firstOrNull()?.getValue(Cuenta::class.java)
+        } catch (e: Exception) {
+            null
+        }
     }
 
-    // Función para parsear una fecha en formato String a Date
-    private fun parsearFecha(fecha: String): Date {
-        val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        return formato.parse(fecha) ?: Date() // Si hay un error en el parseo, devuelve la fecha actual
-    }
+    suspend fun agregarCuentasDePrueba() {
+        val cuentasPrueba = listOf(
+            Cuenta("User", "Test", "test@test.com", "123456", System.currentTimeMillis()),
+            Cuenta("Jaime", "Zapata Salinas", "jzapata@crell.cl", "123456", System.currentTimeMillis()),
+            Cuenta("Miguel", "Puebla Cuero", "mpuebla@test.com", "123456", System.currentTimeMillis())
+        )
 
-    // Función para agregar algunas cuentas de prueba
-    fun agregarCuentasDePrueba() {
-        agregarCuenta(Cuenta("User", "Test", "test@test.com", "123456", parsearFecha("1990-01-01")))
-        agregarCuenta(Cuenta("Jaime", "Zapata Salinas", "jzapata@crell.cl", "123456", parsearFecha("1993-05-22")))
-        agregarCuenta(Cuenta("Miguel", "Puebla Cuero", "mpuebla@test.com", "123456", parsearFecha("1990-01-01")))
+        cuentasPrueba.forEach { cuenta ->
+            agregarCuenta(cuenta)
+        }
     }
 }

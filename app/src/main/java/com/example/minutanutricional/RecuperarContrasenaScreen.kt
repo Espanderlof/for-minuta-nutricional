@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 @Composable
 fun RecuperarContrasenaScreen(onNavigateBack: () -> Unit) {
@@ -15,6 +16,9 @@ fun RecuperarContrasenaScreen(onNavigateBack: () -> Unit) {
     var dialogMessage by remember { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -52,22 +56,39 @@ fun RecuperarContrasenaScreen(onNavigateBack: () -> Unit) {
 
         Button(
             onClick = {
-                if (email.isBlank() || !Utils.isValidEmail(email)) {
-                    isError = true
-                    errorMessage = "Por favor, introduce un correo electrónico válido"
-                } else {
-                    if (CuentasManager.buscarCuentaPorCorreo(email) != null) {
-                        dialogMessage = "Se ha enviado un correo de restauración a tu cuenta de correo electrónico $email"
-                        showDialog = true
-                    } else {
+                coroutineScope.launch {
+                    isLoading = true
+                    if (email.isBlank() || !Utils.isValidEmail(email)) {
                         isError = true
-                        errorMessage = "No se encontró ninguna cuenta asociada a este correo electrónico"
+                        errorMessage = "Por favor, introduce un correo electrónico válido"
+                    } else {
+                        try {
+                            val cuenta = CuentasManager.buscarCuentaPorCorreo(email)
+                            if (cuenta != null) {
+                                // Aquí deberías implementar la lógica para enviar un correo de recuperación
+                                // Por ahora, simularemos que se ha enviado el correo
+                                dialogMessage = "Se ha enviado un correo de restauración a tu cuenta de correo electrónico $email"
+                                showDialog = true
+                            } else {
+                                isError = true
+                                errorMessage = "No se encontró ninguna cuenta asociada a este correo electrónico"
+                            }
+                        } catch (e: Exception) {
+                            isError = true
+                            errorMessage = "Error al procesar la solicitud. Inténtalo de nuevo."
+                        }
                     }
+                    isLoading = false
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading
         ) {
-            Text("Enviar correo de recuperación")
+            if (isLoading) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
+            } else {
+                Text("Enviar correo de recuperación")
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
