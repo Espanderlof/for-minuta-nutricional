@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// S7
 @Composable
 fun MinutaNutricionalApp(userPreferences: UserPreferences) {
     val navController = rememberNavController()
