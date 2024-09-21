@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.ui.tooling.preview.Preview
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,6 +26,7 @@ fun CrearCuentaScreen(onNavigateBack: () -> Unit) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showAlert by remember { mutableStateOf(false) }
     var alertMessage by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
 
     val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
 
@@ -94,18 +96,26 @@ fun CrearCuentaScreen(onNavigateBack: () -> Unit) {
 
         Button(
             onClick = {
-                if (validateFields(nombre, apellidos, email, password, fechaNacimiento)) {
-                    val nuevaCuenta = Cuenta(nombre, apellidos, email, password, Date(fechaNacimiento!!))
-                    if (CuentasManager.agregarCuenta(nuevaCuenta)) {
-                        alertMessage = "Su cuenta ha sido creada con éxito"
-                        showAlert = true
+                coroutineScope.launch {
+                    if (validateFields(nombre, apellidos, email, password, fechaNacimiento)) {
+                        val cuentaExistente = CuentasManager.buscarCuentaPorCorreo(email)
+                        if (cuentaExistente == null) {
+                            val nuevaCuenta = Cuenta(nombre, apellidos, email, password, Date(fechaNacimiento!!))
+                            if (CuentasManager.agregarCuenta(nuevaCuenta)) {
+                                alertMessage = "Su cuenta ha sido creada con éxito"
+                                showAlert = true
+                            } else {
+                                alertMessage = "Error al crear la cuenta. Por favor, intente nuevamente."
+                                showAlert = true
+                            }
+                        } else {
+                            alertMessage = "Ya existe una cuenta con este correo electrónico"
+                            showAlert = true
+                        }
                     } else {
-                        alertMessage = "El correo electrónico ya está en uso"
+                        alertMessage = "Por favor, complete todos los campos correctamente"
                         showAlert = true
                     }
-                } else {
-                    alertMessage = "Por favor, complete todos los campos correctamente"
-                    showAlert = true
                 }
             },
             modifier = Modifier.fillMaxWidth()

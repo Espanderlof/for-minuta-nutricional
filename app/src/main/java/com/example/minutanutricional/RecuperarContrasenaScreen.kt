@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 @Composable
 fun RecuperarContrasenaScreen(onNavigateBack: () -> Unit) {
@@ -15,6 +16,7 @@ fun RecuperarContrasenaScreen(onNavigateBack: () -> Unit) {
     var dialogMessage by remember { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -52,16 +54,23 @@ fun RecuperarContrasenaScreen(onNavigateBack: () -> Unit) {
 
         Button(
             onClick = {
-                if (email.isBlank() || !Utils.isValidEmail(email)) {
-                    isError = true
-                    errorMessage = "Por favor, introduce un correo electrónico válido"
-                } else {
-                    if (CuentasManager.buscarCuentaPorCorreo(email) != null) {
-                        dialogMessage = "Se ha enviado un correo de restauración a tu cuenta de correo electrónico $email"
-                        showDialog = true
-                    } else {
+                coroutineScope.launch {
+                    if (email.isBlank() || !Utils.isValidEmail(email)) {
                         isError = true
-                        errorMessage = "No se encontró ninguna cuenta asociada a este correo electrónico"
+                        errorMessage = "Por favor, introduce un correo electrónico válido"
+                    } else {
+                        try {
+                            if (CuentasManager.buscarCuentaPorCorreo(email) != null) {
+                                dialogMessage = "Se ha enviado un correo de restauración a tu cuenta de correo electrónico $email"
+                                showDialog = true
+                            } else {
+                                isError = true
+                                errorMessage = "No se encontró ninguna cuenta asociada a este correo electrónico"
+                            }
+                        } catch (e: Exception) {
+                            isError = true
+                            errorMessage = "Ocurrió un error al buscar la cuenta. Por favor, intenta nuevamente."
+                        }
                     }
                 }
             },

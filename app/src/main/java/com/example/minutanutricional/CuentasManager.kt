@@ -1,46 +1,42 @@
 package com.example.minutanutricional
 
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.tasks.await
 import java.util.*
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 data class Cuenta(
-    val nombre: String,
-    val apellidos: String,
-    val correoElectronico: String,
-    val contrasena: String,
-    val fechaNacimiento: Date
+    val nombre: String = "",
+    val apellidos: String = "",
+    val correoElectronico: String = "",
+    val contrasena: String = "",
+    val fechaNacimiento: Date = Date()
 )
 
 object CuentasManager {
-    private val cuentas = mutableListOf<Cuenta>()
+    private val database = Firebase.database
+    private val cuentasRef = database.getReference("cuentas")
 
-    fun agregarCuenta(cuenta: Cuenta): Boolean {
-        if (buscarCuentaPorCorreo(cuenta.correoElectronico) != null) {
-            return false // El correo ya está en uso
+    suspend fun agregarCuenta(cuenta: Cuenta): Boolean {
+        return try {
+            val cuentaKey = cuenta.correoElectronico.replace(".", ",")
+            cuentasRef.child(cuentaKey).setValue(cuenta).await()
+            true
+        } catch (e: Exception) {
+            false
         }
-        cuentas.add(cuenta)
-        return true
     }
 
-    fun validarCredenciales(correoElectronico: String, contrasena: String): Boolean {
-        return cuentas.any { it.correoElectronico == correoElectronico && it.contrasena == contrasena }
+    suspend fun validarCredenciales(correoElectronico: String, contrasena: String): Boolean {
+        val cuentaKey = correoElectronico.replace(".", ",")
+        val snapshot = cuentasRef.child(cuentaKey).get().await()
+        val cuenta = snapshot.getValue(Cuenta::class.java)
+        return cuenta?.contrasena == contrasena
     }
 
-    fun buscarCuentaPorCorreo(correoElectronico: String): Cuenta? {
-        return cuentas.find { it.correoElectronico == correoElectronico }
-    }
-
-    // Función para parsear una fecha en formato String a Date
-    private fun parsearFecha(fecha: String): Date {
-        val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        return formato.parse(fecha) ?: Date() // Si hay un error en el parseo, devuelve la fecha actual
-    }
-
-    // Función para agregar algunas cuentas de prueba
-    fun agregarCuentasDePrueba() {
-        agregarCuenta(Cuenta("User", "Test", "test@test.com", "123456", parsearFecha("1990-01-01")))
-        agregarCuenta(Cuenta("Jaime", "Zapata Salinas", "jzapata@crell.cl", "123456", parsearFecha("1993-05-22")))
-        agregarCuenta(Cuenta("Miguel", "Puebla Cuero", "mpuebla@test.com", "123456", parsearFecha("1990-01-01")))
+    suspend fun buscarCuentaPorCorreo(correoElectronico: String): Cuenta? {
+        val cuentaKey = correoElectronico.replace(".", ",")
+        val snapshot = cuentasRef.child(cuentaKey).get().await()
+        return snapshot.getValue(Cuenta::class.java)
     }
 }

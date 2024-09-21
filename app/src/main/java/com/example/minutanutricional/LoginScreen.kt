@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -19,6 +20,7 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -48,21 +50,29 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                when {
-                    email.isBlank() || password.isBlank() -> {
-                        errorMessage = "Por favor, completa todos los campos"
-                        showErrorDialog = true
-                    }
-                    !Utils.isValidEmail(email) -> {
-                        errorMessage = "Por favor, introduce un correo electrónico válido"
-                        showErrorDialog = true
-                    }
-                    CuentasManager.validarCredenciales(email, password) -> {
-                        onNavigateToMinutaNutricional(email)
-                    }
-                    else -> {
-                        errorMessage = "Correo electrónico o contraseña incorrectos"
-                        showErrorDialog = true
+                coroutineScope.launch {
+                    when {
+                        email.isBlank() || password.isBlank() -> {
+                            errorMessage = "Por favor, completa todos los campos"
+                            showErrorDialog = true
+                        }
+                        !Utils.isValidEmail(email) -> {
+                            errorMessage = "Por favor, introduce un correo electrónico válido"
+                            showErrorDialog = true
+                        }
+                        else -> {
+                            try {
+                                if (CuentasManager.validarCredenciales(email, password)) {
+                                    onNavigateToMinutaNutricional(email)
+                                } else {
+                                    errorMessage = "Correo electrónico o contraseña incorrectos"
+                                    showErrorDialog = true
+                                }
+                            } catch (e: Exception) {
+                                errorMessage = "Error al iniciar sesión. Por favor, intenta nuevamente."
+                                showErrorDialog = true
+                            }
+                        }
                     }
                 }
             },

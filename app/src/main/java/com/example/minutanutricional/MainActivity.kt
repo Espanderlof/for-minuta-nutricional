@@ -1,6 +1,7 @@
 package com.example.minutanutricional
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
@@ -13,6 +14,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.minutanutricional.ui.theme.MinutaNutricionalTheme
+import com.google.firebase.FirebaseApp
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -21,7 +25,22 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         userPreferences = UserPreferences(this)
-        CuentasManager.agregarCuentasDePrueba()
+        //CuentasManager.agregarCuentasDePrueba()
+
+        // Inicializar Firebase
+        FirebaseApp.initializeApp(this)
+
+        // Agregar un registro de prueba a Firebase Realtime Database
+        /*val database = Firebase.database
+        val myRef = database.getReference("prueba")
+
+        myRef.setValue("¡Hola, Firebase!")
+            .addOnSuccessListener {
+                Log.d("Firebase", "Dato guardado exitosamente")
+            }
+            .addOnFailureListener {
+                Log.e("Firebase", "Error al guardar el dato", it)
+            }*/
 
         setContent {
             MinutaNutricionalTheme {

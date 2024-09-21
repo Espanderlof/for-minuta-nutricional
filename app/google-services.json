@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "261184775732",
+    "project_id": "minutanutricional",
+    "storage_bucket": "minutanutricional.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:261184775732:android:a2ed25e4139b011ecb0c61",
+        "android_client_info": {
+          "package_name": "com.example.minutanutricional"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnfeTlN2xp9cdpZ7Iz9oD3-ZUp53piTkw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
